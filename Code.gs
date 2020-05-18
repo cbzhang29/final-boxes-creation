@@ -1,4 +1,5 @@
-var slidesID = "1c6qsHnE0hMx9msXx1gTpMCWQ33z5n-NaxN0llRHoKLA"
+//var slidesID = "1c6qsHnE0hMx9msXx1gTpMCWQ33z5n-NaxN0llRHoKLA" //actual slides id
+var slidesID = "1KSRNvuKJRybgqiTNzpipfGVbNttjpcUJPEncX52qkNA";
 var word_arr = []; //sentences
 var type_arr = []; //types
 var page_arr = []; //page num
@@ -26,30 +27,34 @@ function main(){
     if (type_arr[z] == 1){
       type1_test(word_arr[z], page_arr[z]);
       Logger.log("Type 1 just ran.");
+      Utilities.sleep(5000);
     }
     else if (type_arr[z] == 2){
       var sents_arr = [word_arr[z], word_arr[z+1]];
       type2_test(sents_arr, page_arr[z]);
       z++;
       Logger.log("Type 2 just ran.");
+      Utilities.sleep(5000);
     }
     else if (type_arr[z] == 3){
       var sents_arr = [word_arr[z], word_arr[z+1], word_arr[z+2]];
       type3_test(sents_arr, page_arr[z]);
       z = z+2;
       Logger.log("Type 3 just ran.");
+      Utilities.sleep(5000);
     }
     else if (type_arr[z] == 4){
       var sents_arr = [word_arr[z], word_arr[z+1], word_arr[z+2], word_arr[z+3]];
       type4_test(sents_arr, page_arr[z]);
       z = z+3;
       Logger.log("Type 4 just ran.");
+      Utilities.sleep(5000);
     }
-    else if (word_arr[z] == ''){
-      //don't do anything
-    }
+//    else if (type_arr[z] == ''){
+//      //don't do anything
+//    }
     else{
-      Logger.log("Error at position " + z);
+      Logger.log("Nothing at position " + z);
     }
   }
 }
@@ -953,7 +958,7 @@ function changeRectangleColor(presentationId, pageElementId) {
         "shapeBackgroundFill": {
           "solidFill": {
             "color": {
-              "themeColor": 'ACCENT5'
+              "themeColor": 'ACCENT4'
               //DARK1 = BLACK
               //DARK2 = DARK GRAY
               //LIGHT1 = WHITE
@@ -961,27 +966,27 @@ function changeRectangleColor(presentationId, pageElementId) {
               //ACCENT1 = ORANGE/YELLOW
               //ACCENT2 = EVEN DARKER GRAY
               //ACCENT3 = TEAL GRAY
-              //ACCENT4 = ORANGE/YELLOW (same as 1)
+              //ACCENT4 = NORMAL GREEN (same as 1)
               //ACCENT5 = TEAL
               //ACCENT6 = BRIGHT YELLOW
             }
           }
         },
-//        "outline": {
-//            "dashStyle": "LONG_DASH",
-//            "outlineFill": {
-//              "solidFill": {
-//                "alpha": 0.6,
-//                "color": {
-//                  "themeColor": "ACCENT5"
-//                }
-//              }
-//            },
-//            "weight": {
-//              "magnitude": 3,
-//              "unit": "PT"
-//            }
-//      }
+        "outline": {
+            "dashStyle": "SOLID",
+            "outlineFill": {
+              "solidFill": {
+                "alpha": 1,
+                "color": {
+                  "themeColor": "ACCENT4"
+                }
+              }
+            },
+            "weight": {
+              "magnitude": 1,
+              "unit": "PT"
+            }
+      }
     }
           
     }}];
