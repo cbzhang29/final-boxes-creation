@@ -5,13 +5,13 @@ var page_arr = []; //page num
 
 /*
 Type 1: find half the length of the sentence and then subtract that amount from the middle of the slide (360) and that is the starting x pt, y = 284
-Type 2: x1 = 125.5, y1 = 108; x2 = , y2 = 
+Type 2: x1 = 125.5, y1 = 108; x2 = 125.5, y2 = 251
 Type 3: x1 = , y1 = ; x2 = , y2 = ; x3 = , y3 = 
 Type 4: x1 = , y1 = ; x2 = , y2 = ; x3 = , y3 = ; x4 = , y4 = ;
 */
 
-var x = 125.5; //roughly x width of slide is 720  // type 2 x:127 y:110  pt.2 = x: 127 y:252
-var y = 108; //roughly y height of slide is 405
+var x = 0; //roughly x width of slide is 720  // type 2 x:127 y:110  pt.2 = x: 127 y:252
+var y = 0; //roughly y height of slide is 405
 var len = 9.34;
 //var space = 10;
 
@@ -54,10 +54,11 @@ function main(){
   }
 }
 function test_types(){
-  logProductInfo();
-  Logger.log("Words: " + word_arr);
-  Logger.log("Type: " + type_arr);
-  Logger.log("Page: " + page_arr);
+  var text = "¿Por qué no / vamos por un café / después? / Test"
+//  Logger.log("Words: " + word_arr);
+//  Logger.log("Type: " + type_arr);
+//  Logger.log("Page: " + page_arr);
+  type1_test(text, 28);
 }
 
 function type1_test(sentence, page){
@@ -966,21 +967,21 @@ function changeRectangleColor(presentationId, pageElementId) {
             }
           }
         },
-        "outline": {
-            "dashStyle": "LONG_DASH",
-            "outlineFill": {
-              "solidFill": {
-                "alpha": 0.6,
-                "color": {
-                  "themeColor": "ACCENT5"
-                }
-              }
-            },
-            "weight": {
-              "magnitude": 3,
-              "unit": "PT"
-            }
-      }
+//        "outline": {
+//            "dashStyle": "LONG_DASH",
+//            "outlineFill": {
+//              "solidFill": {
+//                "alpha": 0.6,
+//                "color": {
+//                  "themeColor": "ACCENT5"
+//                }
+//              }
+//            },
+//            "weight": {
+//              "magnitude": 3,
+//              "unit": "PT"
+//            }
+//      }
     }
           
     }}];
