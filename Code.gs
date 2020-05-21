@@ -1,5 +1,5 @@
-//var slidesID = "1c6qsHnE0hMx9msXx1gTpMCWQ33z5n-NaxN0llRHoKLA" //actual slides id
-var slidesID = "1KSRNvuKJRybgqiTNzpipfGVbNttjpcUJPEncX52qkNA";
+var slidesID = ""; //actual slides id
+//var slidesID = "1KSRNvuKJRybgqiTNzpipfGVbNttjpcUJPEncX52qkNA";
 var word_arr = []; //sentences
 var type_arr = []; //types
 var page_arr = []; //page num
@@ -19,50 +19,49 @@ var len = 9.34;
 function main(){
   logProductInfo(); // three arrays: word_arr, type_arr, page_arr; should all be the same length
   var presentation = Slides.Presentations.get(slidesID);
-  Logger.log("Sent: " + word_arr);
-  Logger.log("Type: " + type_arr);
-  Logger.log("Page: " + page_arr);
+  //Logger.log("Sent: " + word_arr);
+ // Logger.log("Type: " + type_arr);
+ // Logger.log("Page: " + page_arr);
   for(var z = 0; z < word_arr.length; z++){ 
-    Logger.log("z = " + z);
+    //Logger.log("z = " + z);
     if (type_arr[z] == 1){
       type1_test(word_arr[z], page_arr[z]);
       Logger.log("Type 1 just ran.");
-      Utilities.sleep(5000);
+      Utilities.sleep(7000);
     }
     else if (type_arr[z] == 2){
       var sents_arr = [word_arr[z], word_arr[z+1]];
       type2_test(sents_arr, page_arr[z]);
       z++;
       Logger.log("Type 2 just ran.");
-      Utilities.sleep(5000);
+      Utilities.sleep(7000);
     }
     else if (type_arr[z] == 3){
       var sents_arr = [word_arr[z], word_arr[z+1], word_arr[z+2]];
       type3_test(sents_arr, page_arr[z]);
       z = z+2;
       Logger.log("Type 3 just ran.");
-      Utilities.sleep(5000);
+      Utilities.sleep(7000);
     }
     else if (type_arr[z] == 4){
       var sents_arr = [word_arr[z], word_arr[z+1], word_arr[z+2], word_arr[z+3]];
       type4_test(sents_arr, page_arr[z]);
       z = z+3;
       Logger.log("Type 4 just ran.");
-      Utilities.sleep(5000);
+      Utilities.sleep(7000);
     }
 //    else if (type_arr[z] == ''){
 //      //don't do anything
 //    }
-    else{
-      Logger.log("Nothing at position " + z);
-    }
+//    else{
+//      //Logger.log("Nothing at position " + z);
+//    }
   }
 }
 function test_types(){
   var text = "¿Por qué no / vamos por un café / después? / Test"
-//  Logger.log("Words: " + word_arr);
-//  Logger.log("Type: " + type_arr);
-//  Logger.log("Page: " + page_arr);
+  logProductInfo();
+  Logger.log(slidesID);
   type1_test(text, 28);
 }
 
@@ -646,6 +645,7 @@ function type4_test(sentences, page){
       //}  
     }
   }
+  Utilities.sleep(10000);
     x= 125.5
     y = 139;
     //i++;
@@ -725,6 +725,7 @@ function type4_test(sentences, page){
       //}  
     }
   }
+  Utilities.sleep(10000);
   x= 125.5
   y = 225;
     //i++;
@@ -804,6 +805,7 @@ function type4_test(sentences, page){
       //}  
     }
   }
+  Utilities.sleep(10000);
   x = 125.5
     y = 312;
     //i++;
@@ -883,6 +885,7 @@ function type4_test(sentences, page){
       //}  
     }
   }
+  Utilities.sleep(10000);
 }
 
 /**
@@ -894,6 +897,7 @@ function type4_test(sentences, page){
 function logProductInfo() {
   var sheet = SpreadsheetApp.getActiveSheet();
   var data = sheet.getDataRange().getValues();
+  slidesID = data[1][4];
   for (var i = 32; i < data.length; i++) {
    // Logger.log('Product name: ' + data[i][0]); //row i col 1 (A)
     //Logger.log(data[i][0]); //row i col 2 (B) 
