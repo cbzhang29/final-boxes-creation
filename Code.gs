@@ -16,39 +16,59 @@ var y = 0; //roughly y height of slide is 405
 var len = 9.34;
 //var space = 10;
 
+function getRssFeed() {
+  var cache = CacheService.getScriptCache();
+  var cached = cache.get("rss-feed-contents");
+  if (cached != null) {
+    return cached;
+  }
+  var result = UrlFetchApp.fetch("https://docs.google.com/spreadsheets/d/1i0kefZqcg66V8Mz7ahdVs3Fe1QKY__7E49mxdjI6A_Y/edit#gid=1030083970"); // takes 20 seconds
+  var contents = result.getContentText();
+  cache.put("rss-feed-contents", contents, 1500); // cache for 25 minutes
+  return contents;
+}
+
 function main(){
   logProductInfo(); // three arrays: word_arr, type_arr, page_arr; should all be the same length
   var presentation = Slides.Presentations.get(slidesID);
+  getRssFeed();
   //Logger.log("Sent: " + word_arr);
  // Logger.log("Type: " + type_arr);
  // Logger.log("Page: " + page_arr);
+  for(var n = 0; n < type_arr.length; n++){
+    if (type_arr[n] == ""){
+      type_arr.splice(n,1);
+      word_arr.splice(n,1);
+      page_arr.splice(n,1);
+      n--;
+    }
+  }
   for(var z = 0; z < word_arr.length; z++){ 
     //Logger.log("z = " + z);
     if (type_arr[z] == 1){
-      type1_test(word_arr[z], page_arr[z]);
+      type1(word_arr[z].trim(), page_arr[z]);
       Logger.log("Type 1 just ran.");
-      Utilities.sleep(7000);
+      //Utilities.sleep(6000);
     }
     else if (type_arr[z] == 2){
-      var sents_arr = [word_arr[z], word_arr[z+1]];
-      type2_test(sents_arr, page_arr[z]);
+      var sents_arr = [word_arr[z].trim(), word_arr[z+1].trim()];
+      type2(sents_arr, page_arr[z]);
       z++;
       Logger.log("Type 2 just ran.");
-      Utilities.sleep(7000);
+     // Utilities.sleep(6000);
     }
     else if (type_arr[z] == 3){
-      var sents_arr = [word_arr[z], word_arr[z+1], word_arr[z+2]];
-      type3_test(sents_arr, page_arr[z]);
+      var sents_arr = [word_arr[z].trim(), word_arr[z+1].trim(), word_arr[z+2].trim()];
+      type3(sents_arr, page_arr[z]);
       z = z+2;
-      Logger.log("Type 3 just ran.");
-      Utilities.sleep(7000);
+      //Utilities.sleep(6000);
     }
     else if (type_arr[z] == 4){
-      var sents_arr = [word_arr[z], word_arr[z+1], word_arr[z+2], word_arr[z+3]];
-      type4_test(sents_arr, page_arr[z]);
+      var sents_arr = [word_arr[z].trim(), word_arr[z+1].trim(), word_arr[z+2].trim(), word_arr[z+3].trim()];
+      type4(sents_arr, page_arr[z]);
       z = z+3;
       Logger.log("Type 4 just ran.");
-      Utilities.sleep(7000);
+     // Utilities.sleep(6000);
     }
 //    else if (type_arr[z] == ''){
 //      //don't do anything
@@ -59,833 +79,341 @@ function main(){
   }
 }
 function test_types(){
-  var text = "¿Por qué no / vamos por un café / después? / Test"
   logProductInfo();
-  Logger.log(slidesID);
-  type1_test(text, 28);
+  Logger.log("Sent: " + word_arr);
+  Logger.log("Type: " + type_arr);
+  Logger.log("Page: " + page_arr);
+  for(var i = 0; i < type_arr.length; i++){
+    if (type_arr[i] == ""){
+      type_arr.splice(i,1);
+      word_arr.splice(i,1);
+      page_arr.splice(i,1);
+      i--;
+    }
+  }
+  Logger.log("Sent: " + word_arr);
+  Logger.log("Type: " + type_arr);
+  Logger.log("Page: " + page_arr);
+  
 }
 
-function type1_test(sentence, page){
-  //x = 360; 
-  y = 284; //y should always be 284 //x = 360 is the exact middle
+function type1(sentence, page){
+  y = 284; 
   var presentation = Slides.Presentations.get(slidesID); //get the correct presentation
   var slides = presentation.slides;
   var pageID = slides[page-1].objectId;
-  //addRectangle(slidesID, pageID, 10);
   var text = sentence;
   var size = text.length*len;
   var mid = size/2;
   x = 360-mid;
   
   var substrings = text.split(' ');
-  Logger.log(substrings);
-  //var num_words = substrings.length;
-  
+
   for(var i = 0; i < substrings.length; i++){
-    Logger.log("Substring " + i + ": " + substrings[i]);
+
     if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“")){
       var temp = substrings[i];
-      //Logger.log("Start char: " + temp[0]);
       x = x + len;
       if (temp[1] == '¡' || temp[1] == "¿"){
         x = x + len;
       }
       if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
-        //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
-        var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-        //Logger.log("End char: " + p);
+        var q = substrings[i].charAt(substrings[i].length-2); 
         var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text.length);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
+        var wordlength = new_text.length*len; //gets the lengths of each word 
 
         var rect = addRectangle(slidesID, pageID, wordlength);
         changeRectangleColor(slidesID, rect);
         
-        x = x + wordlength +len +len; //should be + space + size of punctuation;
+        x = x + wordlength +len +len; //should be current x + wordlength + space + size of punctuation;
         if(q == "!" || q == "?" || q == "." || q == ","){
-          Logger.log("2nd to last: " + q);
           x = x + len;
         }
       }
       else{
         var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-        //if type 2:
-        //for(var j = 0; j<wordlength.length; j++){
+        var wordlength = new_text.length*len; //gets the lengths of each word 
         var rect = addRectangle(slidesID, pageID, wordlength);
         changeRectangleColor(slidesID, rect);
         x = x + wordlength +len;
       }
     }
     else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".")){
-      //var p = substrings[i].charAt(substrings[i].length-1);
       var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-
-      //Logger.log("End char: " + p);
       var new_text = removePunctuation(substrings[i]);
-      Logger.log(new_text);
-      var wordlength = new_text.length*len;//gets the lengths of each word //words is an array of the wordlengths
-      //Logger.log("Wordlength: " + wordlength);
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
+      var wordlength = new_text.length*len;//gets the lengths of each word 
       var rect = addRectangle(slidesID, pageID, wordlength);
       changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len +len; //should be + 5 + size of punctuation;
+      x = x + wordlength +len +len; 
       if(q == "!" || q == "?" || q == "." || q == ","){
-        //Logger.log("2nd to last: " + q);
         x = x +len;
       }
     }
     else if(substrings[i].startsWith("/") && substrings[i].length == 1){
-      var wordlength = substrings[i].length*len; //gets the lengths of each word //words is an array of the wordlengths
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
+      var wordlength = substrings[i].length*len; //gets the lengths of each word 
       x = x + wordlength +len;
     }
     else{
-      //var new_text = removePunctuation(substrings[i]);
-      Logger.log(substrings[i].length);
-      var wordlength = substrings[i].length*len; //gets the lengths of each word //words is an array of the wordlengths
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
+      var wordlength = substrings[i].length*len; //gets the lengths of each word 
       var rect = addRectangle(slidesID, pageID, wordlength);
-        changeRectangleColor(slidesID, rect);
+      changeRectangleColor(slidesID, rect);
       x = x + wordlength +len;
       //}  
     }
   }
   
-  
 }
 
-function type2_test(sentences, page){
+function type2(sentences, page){
   var presentation = Slides.Presentations.get(slidesID); //get the correct presentation
   var slides = presentation.slides; //get the slides from the presentation
-  //for(var i = 0; i < word_arr.length;i++){ //word_arr.length = # of sentences
-  //if type 2:
   x = 125.5; y = 108;
   var pageID = slides[page-1].objectId; //get the pageID of the slide
-    //addTextBox(slidesID, pageID, word_arr[i]); //add text to slide
-  var text = sentences[0]; //whole sentence
-  Logger.log("Text: " + text);
   
-  var substrings = text.split(' ');
-
-  for(var i = 0; i < substrings.length; i++){
-    Logger.log("Substring " + i + ": " + substrings[i]);
-    if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
-      var temp = substrings[i];
-      //Logger.log("Start char: " + temp[0]);
-      x = x + len;
-      if (temp[1] == '¡' || temp[1] == "¿"){
+  for(var w = 0; w < sentences.length; w++){ // loops through the number of sentences
+    var text = sentences[w]; //two sentences
+    if(w == 1){ //reset starting point
+      x = 125.5;
+      y = 251;
+    }
+    var substrings = text.split(' ');
+  
+    for(var i = 0; i < substrings.length; i++){
+      if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
+        var temp = substrings[i];
         x = x + len;
+        if (temp[1] == '¡' || temp[1] == "¿"){
+          x = x + len;
+        }
+        if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
+          //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
+          var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
+          //Logger.log("End char: " + p);
+          var new_text = removePunctuation(substrings[i]);
+          // Logger.log(new_text.length);
+          var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
+          
+          var rect = addRectangle(slidesID, pageID, wordlength);        
+          changeRectangleColor(slidesID, rect);
+          
+          x = x + wordlength +len +len; //should be + space + size of punctuation;
+          if(q == "!" || q == "?" || q == "." || q == ","){
+            //Logger.log("2nd to last: " + q);
+            x = x + len;
+          }   
+        }
+        else{
+          var new_text = removePunctuation(substrings[i]);
+          //Logger.log(new_text);
+          var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
+          //if type 2:
+          //for(var j = 0; j<wordlength.length; j++){
+          var rect = addRectangle(slidesID, pageID, wordlength);       
+          changeRectangleColor(slidesID, rect);
+          x = x + wordlength +len;
+        }
       }
-      if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
-        //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
+      else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".")){
         var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
         //Logger.log("End char: " + p);
         var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text.length);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-
-        var rect = addRectangle(slidesID, pageID, wordlength);        
-        changeRectangleColor(slidesID, rect);
-        
-        x = x + wordlength +len +len; //should be + space + size of punctuation;
-        if(q == "!" || q == "?" || q == "." || q == ","){
-          Logger.log("2nd to last: " + q);
-          x = x + len;
-        }   
-      }
-      else{
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
+        // Logger.log(new_text);
+        var wordlength = new_text.length*len;//gets the lengths of each word //words is an array of the wordlengths
+        //Logger.log("Wordlength: " + wordlength);
         //if type 2:
         //for(var j = 0; j<wordlength.length; j++){
         var rect = addRectangle(slidesID, pageID, wordlength);       
         changeRectangleColor(slidesID, rect);
-        x = x + wordlength +len;
-      }
-    }
-    else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".")){
-      //var p = substrings[i].charAt(substrings[i].length-1);
-      var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-
-      //Logger.log("End char: " + p);
-      var new_text = removePunctuation(substrings[i]);
-      Logger.log(new_text);
-      var wordlength = new_text.length*len;//gets the lengths of each word //words is an array of the wordlengths
-      //Logger.log("Wordlength: " + wordlength);
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);       
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len +len; //should be + 5 + size of punctuation;
-      if(q == "!" || q == "?" || q == "." || q == ","){
-        //Logger.log("2nd to last: " + q);
-        x = x +len;
-      }
-    }
-    else{
-      //var new_text = removePunctuation(substrings[i]);
-      Logger.log(substrings[i].length);
-      var wordlength = substrings[i].length*len; //gets the lengths of each word //words is an array of the wordlengths
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);      
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len;
-      //}  
-    }
-  }
-    x = 125.5;
-    y = 251;
-    //i++;
-    //round two
-    //var pageID = slides[4].objectId;     
-    var text = sentences[1]; 
-    //var text = word_arr[0]; //whole sentence
-  Logger.log("Text: " + text);
-  
-  var substrings = text.split(' ');
-
-  for(var i = 0; i < substrings.length; i++){
-    Logger.log("Substring " + i + ": " + substrings[i]);
-    if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
-      var temp = substrings[i];
-     // Logger.log("Start char: " + temp[0]);
-      x = x +len;
-      if (temp[1] == '¡' || temp[1] == "¿"){
-        x = x +len;
-      }
-    
-      if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
-        //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
-        var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-        //Logger.log("End char: " + p);
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text.length);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-
-        var rect = addRectangle(slidesID, pageID, wordlength);     
-        changeRectangleColor(slidesID, rect);
-        
         x = x + wordlength +len +len; //should be + 5 + size of punctuation;
         if(q == "!" || q == "?" || q == "." || q == ","){
-          Logger.log("2nd to last: " + q);
+          //Logger.log("2nd to last: " + q);
           x = x +len;
-        }   
+        }
       }
       else{
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text.length);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
+        var wordlength = substrings[i].length*len; //gets the lengths of each word //words is an array of the wordlengths
         //if type 2:
         //for(var j = 0; j<wordlength.length; j++){
-        var rect = addRectangle(slidesID, pageID, wordlength);       
+        var rect = addRectangle(slidesID, pageID, wordlength);      
         changeRectangleColor(slidesID, rect);
-        x = x + wordlength + len;
+        x = x + wordlength +len;
+        //}  
       }
-    }
-    else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".")){
-      //Logger.log(substrings[i].length);
-      //var p = substrings[i].charAt(substrings[i].length-1);
-      var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-
-      //Logger.log("End char: " + p);
-      var new_text = removePunctuation(substrings[i]);
-      Logger.log(new_text.length);
-      var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-      //Logger.log("Wordlength: " + wordlength);
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);     
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len +len; //should be + 5 + size of punctuation;
-      if(q == "!" || q == "?" || q == "." || q == ","){
-        Logger.log("2nd to last: " + q);
-        x = x + len;
-      }
-    }
-    else{
-      //var new_text = removePunctuation(substrings[i]);
-      Logger.log(substrings[i].length);
-      var wordlength = substrings[i].length*len;; //gets the lengths of each word //words is an array of the wordlengths
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);      
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len;
-      //}  
     }
   }
-  //}
 }
 
-function type3_test(sentences, page){
+function type3(sentences, page){
   var presentation = Slides.Presentations.get(slidesID); //get the correct presentation
   var slides = presentation.slides; //get the slides from the presentation
   //for(var i = 0; i < word_arr.length;i++){ //word_arr.length = # of sentences
   //if type 2:
   x = 125.5; y = 78;
   var pageID = slides[page-1].objectId; //get the pageID of the slide
-    //addTextBox(slidesID, pageID, word_arr[i]); //add text to slide
-  var text = sentences[0]; //whole sentence
-  Logger.log("Text: " + text);
-  
-  var substrings = text.split(' ');
-
-  for(var i = 0; i < substrings.length; i++){
-    if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
-      var temp = substrings[i];
-      //Logger.log("Start char: " + temp[0]);
-      x = x + len;
-      if (temp[1] == '¡' || temp[1] == "¿"){
-        x = x + len;
-      }
-      if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
-        //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
-        var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-        //Logger.log("End char: " + p);
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text.length);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-
-        var rect = addRectangle(slidesID, pageID, wordlength);    
-        changeRectangleColor(slidesID, rect);
-        
-        x = x + wordlength +len +len; //should be + space + size of punctuation;
-        if(q == "!" || q == "?" || q == "." || q == ","){
-          Logger.log("2nd to last: " + q);
-          x = x + len;
-        }   
-      }
-      else{
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-        //if type 2:
-        //for(var j = 0; j<wordlength.length; j++){
-        var rect = addRectangle(slidesID, pageID, wordlength);    
-        changeRectangleColor(slidesID, rect);
-        x = x + wordlength +len;
-      }
+  for(var w = 0; w < sentences.length; w++){ // loops through the number of sentences
+    var text = sentences[w]; //two sentences
+    if(w == 1){ //reset starting point
+      x = 125.5;
+      y = 182;
     }
-    else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".")){
-      //var p = substrings[i].charAt(substrings[i].length-1);
-      var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-
-      //Logger.log("End char: " + p);
-      var new_text = removePunctuation(substrings[i]);
-      Logger.log(new_text);
-      var wordlength = new_text.length*len;//gets the lengths of each word //words is an array of the wordlengths
-      //Logger.log("Wordlength: " + wordlength);
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);        
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len +len; //should be + 5 + size of punctuation;
-      if(q == "!" || q == "?" || q == "." || q == ","){
-        //Logger.log("2nd to last: " + q);
-        x = x +len;
-      }
+    else if(w == 2){
+      x = 125.5
+      y = 286;
     }
-    else{
-      //var new_text = removePunctuation(substrings[i]);
-      Logger.log(substrings[i].length);
-      var wordlength = substrings[i].length*len; //gets the lengths of each word //words is an array of the wordlengths
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);     
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len;
-      //}  
-    }
-  }
-    x=125.5
-    y = 182;
-    //i++;
-    //round two    
-    var text = sentences[1]; 
-    //var text = word_arr[0]; //whole sentence
-  Logger.log("Text: " + text);
-  
-  var substrings = text.split(' ');
-
-  for(var i = 0; i < substrings.length; i++){
-    Logger.log("Substring " + i + ": " + substrings[i]);
-    if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
-      var temp = substrings[i];
-      //Logger.log("Start char: " + temp[0]);
-      x = x + len;
-      if (temp[1] == '¡' || temp[1] == "¿"){
-        x = x + len;
-      }
-      if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
-        //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
-        var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-        //Logger.log("End char: " + p);
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text.length);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-
-        var rect = addRectangle(slidesID, pageID, wordlength);       
-        changeRectangleColor(slidesID, rect);
-        
-        x = x + wordlength +len +len; //should be + space + size of punctuation;
-        if(q == "!" || q == "?" || q == "." || q == ","){
-          Logger.log("2nd to last: " + q);
-          x = x + len;
-        }   
-      }
-      else{
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-        //if type 2:
-        //for(var j = 0; j<wordlength.length; j++){
-        var rect = addRectangle(slidesID, pageID, wordlength);      
-        changeRectangleColor(slidesID, rect);
-        x = x + wordlength +len;
-      }
-    }
-    else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
-      //var p = substrings[i].charAt(substrings[i].length-1);
-      var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-
-      //Logger.log("End char: " + p);
-      var new_text = removePunctuation(substrings[i]);
-      Logger.log(new_text);
-      var wordlength = new_text.length*len;//gets the lengths of each word //words is an array of the wordlengths
-      //Logger.log("Wordlength: " + wordlength);
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);        
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len +len; //should be + 5 + size of punctuation;
-      if(q == "!" || q == "?" || q == "." || q == ","){
-        //Logger.log("2nd to last: " + q);
-        x = x +len;
-      }
-    }
-    else{
-      //var new_text = removePunctuation(substrings[i]);
-      Logger.log(substrings[i].length);
-      var wordlength = substrings[i].length*len; //gets the lengths of each word //words is an array of the wordlengths
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);      
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len;
-      //}  
-    }
-  }
-  x=127
-    y = 286;
-    //i++;
-    //round two
+    var text = sentences[w]; //whole sentence
+    var substrings = text.split(' ');
     
-    var text = sentences[2]; 
-    //var text = word_arr[0]; //whole sentence
-  Logger.log("Text: " + text);
-  
-  var substrings = text.split(' ');
-
-  for(var i = 0; i < substrings.length; i++){
-    Logger.log("Substring " + i + ": " + substrings[i]);
-    if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
-      var temp = substrings[i];
-      //Logger.log("Start char: " + temp[0]);
-      x = x + len;
-      if (temp[1] == '¡' || temp[1] == "¿"){
+    for(var i = 0; i < substrings.length; i++){
+      
+      if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
+        var temp = substrings[i];
+        //Logger.log("Start char: " + temp[0]);
         x = x + len;
-      }
-      if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
-        //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
-        var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-        //Logger.log("End char: " + p);
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text.length);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-
-        var rect = addRectangle(slidesID, pageID, wordlength);       
-        changeRectangleColor(slidesID, rect);
-        
-        x = x + wordlength +len +len; //should be + space + size of punctuation;
-        if(q == "!" || q == "?" || q == "." || q == ","){
-          Logger.log("2nd to last: " + q);
+        if (temp[1] == '¡' || temp[1] == "¿"){
           x = x + len;
-        }   
+        }
+        if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
+          //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
+          var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
+          //Logger.log("End char: " + p);
+          var new_text = removePunctuation(substrings[i]);
+          //   Logger.log(new_text.length);
+          var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
+          
+          var rect = addRectangle(slidesID, pageID, wordlength);    
+          changeRectangleColor(slidesID, rect);
+          
+          x = x + wordlength +len +len; //should be + space + size of punctuation;
+          if(q == "!" || q == "?" || q == "." || q == ","){
+            // Logger.log("2nd to last: " + q);
+            x = x + len;
+          }   
+        }
+        else{
+          var new_text = removePunctuation(substrings[i]);
+          // Logger.log(new_text);
+          var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
+          //if type 2:
+          //for(var j = 0; j<wordlength.length; j++){
+          var rect = addRectangle(slidesID, pageID, wordlength);    
+          changeRectangleColor(slidesID, rect);
+          x = x + wordlength +len;
+        }
+      }
+      else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".")){
+        //var p = substrings[i].charAt(substrings[i].length-1);
+        var q = substrings[i].charAt(substrings[i].length-2); 
+        var new_text = removePunctuation(substrings[i]);
+        // Logger.log(new_text);
+        var wordlength = new_text.length*len;//gets the lengths of each word
+        var rect = addRectangle(slidesID, pageID, wordlength);        
+        changeRectangleColor(slidesID, rect);
+        x = x + wordlength +len +len; 
+        if(q == "!" || q == "?" || q == "." || q == ","){
+          x = x +len;
+        }
       }
       else{
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-        //if type 2:
-        //for(var j = 0; j<wordlength.length; j++){
-        var rect = addRectangle(slidesID, pageID, wordlength);       
+        var wordlength = substrings[i].length*len; //gets the lengths of each word 
+        var rect = addRectangle(slidesID, pageID, wordlength);     
         changeRectangleColor(slidesID, rect);
         x = x + wordlength +len;
       }
-    }
-    else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".")){
-      //var p = substrings[i].charAt(substrings[i].length-1);
-      var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-
-      //Logger.log("End char: " + p);
-      var new_text = removePunctuation(substrings[i]);
-      Logger.log(new_text);
-      var wordlength = new_text.length*len;//gets the lengths of each word //words is an array of the wordlengths
-      //Logger.log("Wordlength: " + wordlength);
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);     
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len +len; //should be + 5 + size of punctuation;
-      if(q == "!" || q == "?" || q == "." || q == ","){
-        //Logger.log("2nd to last: " + q);
-        x = x +len;
-      }
-    }
-    else{
-      //var new_text = removePunctuation(substrings[i]);
-      Logger.log(substrings[i].length);
-      var wordlength = substrings[i].length*len; //gets the lengths of each word //words is an array of the wordlengths
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);      
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len;
-      //}  
     }
   }
 }
 
 
-function type4_test(sentences, page){
+function type4(sentences, page){
   var presentation = Slides.Presentations.get(slidesID); //get the correct presentation
   var slides = presentation.slides; //get the slides from the presentation
   //for(var i = 0; i < word_arr.length;i++){ //word_arr.length = # of sentences
   //if type 2:
-  x = 127; y = 52;
+  x = 125.5; y = 52;
   var pageID = slides[page-1].objectId; //get the pageID of the slide
-    //addTextBox(slidesID, pageID, word_arr[i]); //add text to slide
-  var text = sentences[0]; //whole sentence
-  Logger.log("Text: " + text);
-  
-  var substrings = text.split(' ');
-
-  for(var i = 0; i < substrings.length; i++){
-    Logger.log("Substring " + i + ": " + substrings[i]);
-    if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
-      var temp = substrings[i];
-      //Logger.log("Start char: " + temp[0]);
-      x = x + len;
-      if (temp[1] == '¡' || temp[1] == "¿"){
+  //addTextBox(slidesID, pageID, word_arr[i]); //add text to slide
+  for(var w = 0; w < sentences.length; w++){ // loops through the number of sentences
+    var text = sentences[w]; //two sentences
+    if(w == 1){ //reset starting point
+      x = 125.5;
+      y = 139;
+    }
+    else if(w == 2){
+      x = 125.5;
+      y = 225;
+    }
+    else if(w == 3){
+      x = 125.5;
+      y = 312;
+    }
+    var text = sentences[w]; //whole sentence
+    var substrings = text.split(' ');
+    
+    for(var i = 0; i < substrings.length; i++){
+      //Logger.log("Substring " + i + ": " + substrings[i]);
+      if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
+        var temp = substrings[i];
+        //Logger.log("Start char: " + temp[0]);
         x = x + len;
+        if (temp[1] == '¡' || temp[1] == "¿"){
+          x = x + len;
+        }
+        if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
+          //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
+          var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
+          //Logger.log("End char: " + p);
+          var new_text = removePunctuation(substrings[i]);
+          //Logger.log(new_text.length);
+          var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
+          
+          var rect = addRectangle(slidesID, pageID, wordlength);    
+          changeRectangleColor(slidesID, rect);
+          
+          x = x + wordlength +len +len; //should be + space + size of punctuation;
+          if(q == "!" || q == "?" || q == "." || q == ","){
+            //Logger.log("2nd to last: " + q);
+            x = x + len;
+          }   
+        }
+        else{
+          var new_text = removePunctuation(substrings[i]);
+          //Logger.log(new_text);
+          var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
+          //if type 2:
+          //for(var j = 0; j<wordlength.length; j++){
+          var rect = addRectangle(slidesID, pageID, wordlength);      
+          changeRectangleColor(slidesID, rect);
+          x = x + wordlength +len;
+        }
       }
-      if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
-        //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
+      else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".")){
+        //var p = substrings[i].charAt(substrings[i].length-1);
         var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
+        
         //Logger.log("End char: " + p);
         var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text.length);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-
-        var rect = addRectangle(slidesID, pageID, wordlength);    
-        changeRectangleColor(slidesID, rect);
-        
-        x = x + wordlength +len +len; //should be + space + size of punctuation;
-        if(q == "!" || q == "?" || q == "." || q == ","){
-          Logger.log("2nd to last: " + q);
-          x = x + len;
-        }   
-      }
-      else{
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
+        //Logger.log(new_text);
+        var wordlength = new_text.length*len;//gets the lengths of each word //words is an array of the wordlengths
+        //Logger.log("Wordlength: " + wordlength);
         //if type 2:
         //for(var j = 0; j<wordlength.length; j++){
+        var rect = addRectangle(slidesID, pageID, wordlength);     
+        changeRectangleColor(slidesID, rect);
+        x = x + wordlength +len +len; //should be + 5 + size of punctuation;
+        if(q == "!" || q == "?" || q == "." || q == ","){
+          //Logger.log("2nd to last: " + q);
+          x = x +len;
+        }
+      }
+      else{
+        var wordlength = substrings[i].length*len; //gets the lengths of each word
         var rect = addRectangle(slidesID, pageID, wordlength);      
         changeRectangleColor(slidesID, rect);
         x = x + wordlength +len;
       }
     }
-    else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".")){
-      //var p = substrings[i].charAt(substrings[i].length-1);
-      var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-
-      //Logger.log("End char: " + p);
-      var new_text = removePunctuation(substrings[i]);
-      Logger.log(new_text);
-      var wordlength = new_text.length*len;//gets the lengths of each word //words is an array of the wordlengths
-      //Logger.log("Wordlength: " + wordlength);
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);     
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len +len; //should be + 5 + size of punctuation;
-      if(q == "!" || q == "?" || q == "." || q == ","){
-        //Logger.log("2nd to last: " + q);
-        x = x +len;
-      }
-    }
-    else{
-      //var new_text = removePunctuation(substrings[i]);
-      Logger.log(substrings[i].length);
-      var wordlength = substrings[i].length*len; //gets the lengths of each word //words is an array of the wordlengths
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);      
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len;
-      //}  
-    }
+    Utilities.sleep(7000);
   }
-  Utilities.sleep(10000);
-    x= 125.5
-    y = 139;
-    //i++;
-    //round two
-       
-    var text = sentences[1]; 
-    //var text = word_arr[0]; //whole sentence
-  Logger.log("Text: " + text);
-  
-  var substrings = text.split(' ');
-
-  for(var i = 0; i < substrings.length; i++){
-    Logger.log("Substring " + i + ": " + substrings[i]);
-    if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
-      var temp = substrings[i];
-      //Logger.log("Start char: " + temp[0]);
-      x = x + len;
-      if (temp[1] == '¡' || temp[1] == "¿"){
-        x = x + len;
-      }
-      if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
-        //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
-        var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-        //Logger.log("End char: " + p);
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text.length);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-
-        var rect = addRectangle(slidesID, pageID, wordlength);    
-        changeRectangleColor(slidesID, rect);
-        
-        x = x + wordlength +len +len; //should be + space + size of punctuation;
-        if(q == "!" || q == "?" || q == "." || q == ","){
-          Logger.log("2nd to last: " + q);
-          x = x + len;
-        }   
-      }
-      else{
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-        //if type 2:
-        //for(var j = 0; j<wordlength.length; j++){
-        var rect = addRectangle(slidesID, pageID, wordlength);     
-        changeRectangleColor(slidesID, rect);
-        x = x + wordlength +len;
-      }
-    }
-    else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
-      //var p = substrings[i].charAt(substrings[i].length-1);
-      var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-
-      //Logger.log("End char: " + p);
-      var new_text = removePunctuation(substrings[i]);
-      Logger.log(new_text);
-      var wordlength = new_text.length*len;//gets the lengths of each word //words is an array of the wordlengths
-      //Logger.log("Wordlength: " + wordlength);
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);      
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len +len; //should be + 5 + size of punctuation;
-      if(q == "!" || q == "?" || q == "." || q == ","){
-        //Logger.log("2nd to last: " + q);
-        x = x +len;
-      }
-    }
-    else{
-      //var new_text = removePunctuation(substrings[i]);
-      Logger.log(substrings[i].length);
-      var wordlength = substrings[i].length*len; //gets the lengths of each word //words is an array of the wordlengths
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);     
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len;
-      //}  
-    }
-  }
-  Utilities.sleep(10000);
-  x= 125.5
-  y = 225;
-    //i++;
-    //round two
-      
-    var text = sentences[2]; 
-    //var text = word_arr[0]; //whole sentence
-  Logger.log("Text: " + text);
-  
-  var substrings = text.split(' ');
-
-  for(var i = 0; i < substrings.length; i++){
-    Logger.log("Substring " + i + ": " + substrings[i]);
-    if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
-      var temp = substrings[i];
-      //Logger.log("Start char: " + temp[0]);
-      x = x + len;
-      if (temp[1] == '¡' || temp[1] == "¿"){
-        x = x + len;
-      }
-      if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
-        //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
-        var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-        //Logger.log("End char: " + p);
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text.length);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-
-        var rect = addRectangle(slidesID, pageID, wordlength);     
-        changeRectangleColor(slidesID, rect);
-        
-        x = x + wordlength +len +len; //should be + space + size of punctuation;
-        if(q == "!" || q == "?" || q == "." || q == ","){
-          Logger.log("2nd to last: " + q);
-          x = x + len;
-        }   
-      }
-      else{
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-        //if type 2:
-        //for(var j = 0; j<wordlength.length; j++){
-        var rect = addRectangle(slidesID, pageID, wordlength);   
-        changeRectangleColor(slidesID, rect);
-        x = x + wordlength +len;
-      }
-    }
-    else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
-      //var p = substrings[i].charAt(substrings[i].length-1);
-      var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-
-      //Logger.log("End char: " + p);
-      var new_text = removePunctuation(substrings[i]);
-      Logger.log(new_text);
-      var wordlength = new_text.length*len;//gets the lengths of each word //words is an array of the wordlengths
-      //Logger.log("Wordlength: " + wordlength);
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);      
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len +len; //should be + 5 + size of punctuation;
-      if(q == "!" || q == "?" || q == "." || q == ","){
-        //Logger.log("2nd to last: " + q);
-        x = x +len;
-      }
-    }
-    else{
-      //var new_text = removePunctuation(substrings[i]);
-      Logger.log(substrings[i].length);
-      var wordlength = substrings[i].length*len; //gets the lengths of each word //words is an array of the wordlengths
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);    
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len;
-      //}  
-    }
-  }
-  Utilities.sleep(10000);
-  x = 125.5
-    y = 312;
-    //i++;
-    //round two
-   // var pageID = slides[10].objectId;     
-    var text = sentences[3]; 
-    //var text = word_arr[0]; //whole sentence
-  Logger.log("Text: " + text);
-  
-  var substrings = text.split(' ');
-
-  for(var i = 0; i < substrings.length; i++){
-    Logger.log("Substring " + i + ": " + substrings[i]);
-    if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
-      var temp = substrings[i];
-      //Logger.log("Start char: " + temp[0]);
-      x = x + len;
-      if (temp[1] == '¡' || temp[1] == "¿"){
-        x = x + len;
-      }
-      if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
-        //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
-        var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-        //Logger.log("End char: " + p);
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text.length);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-
-        var rect = addRectangle(slidesID, pageID, wordlength);   
-        changeRectangleColor(slidesID, rect);
-        
-        x = x + wordlength +len +len; //should be + space + size of punctuation;
-        if(q == "!" || q == "?" || q == "." || q == ","){
-          Logger.log("2nd to last: " + q);
-          x = x + len;
-        }   
-      }
-      else{
-        var new_text = removePunctuation(substrings[i]);
-        Logger.log(new_text);
-        var wordlength = new_text.length*len; //gets the lengths of each word //words is an array of the wordlengths
-        //if type 2:
-        //for(var j = 0; j<wordlength.length; j++){
-        var rect = addRectangle(slidesID, pageID, wordlength);     
-        changeRectangleColor(slidesID, rect);
-        x = x + wordlength +len;
-      }
-    }
-    else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".")){
-      //var p = substrings[i].charAt(substrings[i].length-1);
-      var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-
-      //Logger.log("End char: " + p);
-      var new_text = removePunctuation(substrings[i]);
-      Logger.log(new_text);
-      var wordlength = new_text.length*len;//gets the lengths of each word //words is an array of the wordlengths
-      //Logger.log("Wordlength: " + wordlength);
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);      
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len +len; //should be + 5 + size of punctuation;
-      if(q == "!" || q == "?" || q == "." || q == ","){
-        //Logger.log("2nd to last: " + q);
-        x = x +len;
-      }
-    }
-    else{
-      //var new_text = removePunctuation(substrings[i]);
-      Logger.log(substrings[i].length);
-      var wordlength = substrings[i].length*len; //gets the lengths of each word //words is an array of the wordlengths
-      //if type 2:
-      //for(var j = 0; j<wordlength.length; j++){
-      var rect = addRectangle(slidesID, pageID, wordlength);     
-      changeRectangleColor(slidesID, rect);
-      x = x + wordlength +len;
-      //}  
-    }
-  }
-  Utilities.sleep(10000);
 }
 
 /**
@@ -896,21 +424,32 @@ function type4_test(sentences, page){
 
 function logProductInfo() {
   var sheet = SpreadsheetApp.getActiveSheet();
+  //var cell = sheet.get
   var data = sheet.getDataRange().getValues();
-  slidesID = data[1][4];
+  slidesID = (data[1][4]);
   for (var i = 32; i < data.length; i++) {
-   // Logger.log('Product name: ' + data[i][0]); //row i col 1 (A)
-    //Logger.log(data[i][0]); //row i col 2 (B) 
-    word_arr.push(data[i][6]);
-    type_arr.push(data[i][21]);
-    page_arr.push(data[i][22]);
+    var type = data[i][21];
+   // Logger.log("Type:" + data[i][21]);
+    if(type == ""){
+      Logger.log("Nothing there");
+    }
+    else{
+      word_arr.push(data[i][6]);
+      type_arr.push(data[i][21]);
+      page_arr.push(data[i][22]);
+     // Logger.log("Added");
+    }
   }
+Logger.log("Sent: " + word_arr);
+ Logger.log("Type: " + type_arr);
+ Logger.log("Page: " + page_arr);
 }
 
 /**
  * Add a new rectangle to a page.
  * @param {string} presentationId The presentation ID.
- * @param {string} pageId The page ID.
+ * @param {string} pageId The page ID. 
+ * @param {integer} length The rectangle length
  */
 function addRectangle(presentationId, pageId, length) {
   // You can specify the ID to use for elements you create,
@@ -950,6 +489,12 @@ function addRectangle(presentationId, pageId, length) {
   return pageElementId;
 }
 
+/**
+ * Changes the rectangle color and outline.
+ * @param {string} presentationId The presentation ID.
+ * @param {string} pageElementId The Id of the rectangle
+ */
+
 function changeRectangleColor(presentationId, pageElementId) {
   // You can specify the ID to use for elements you create,
   // as long as the ID is unique.
@@ -962,7 +507,7 @@ function changeRectangleColor(presentationId, pageElementId) {
         "shapeBackgroundFill": {
           "solidFill": {
             "color": {
-              "themeColor": 'ACCENT4'
+              "themeColor": 'ACCENT1'
               //DARK1 = BLACK
               //DARK2 = DARK GRAY
               //LIGHT1 = WHITE
@@ -970,7 +515,7 @@ function changeRectangleColor(presentationId, pageElementId) {
               //ACCENT1 = ORANGE/YELLOW
               //ACCENT2 = EVEN DARKER GRAY
               //ACCENT3 = TEAL GRAY
-              //ACCENT4 = NORMAL GREEN (same as 1)
+              //ACCENT4 = NORMAL GREEN
               //ACCENT5 = TEAL
               //ACCENT6 = BRIGHT YELLOW
             }
@@ -1002,7 +547,7 @@ function changeRectangleColor(presentationId, pageElementId) {
  * @see https://remarkablemark.org/blog/2019/09/28/javascript-remove-punctuation/
  */
 
-var regex = /[!¡“#$%&'”()*+,/.:;<=>?¿@[\]^_`{|}~]/g;
+var regex = /[!¡“#$%&'”*+,/.:;<=>?¿[\]^_`{|}~]/g;
 
 /**
  * Removes punctuation.
@@ -1014,8 +559,4 @@ function removePunctuation(string) {
   var string1 = string.replace(regex, '');
   var final_string = string1.replace(/\s{2,}/g," ");
   return final_string
-}
-function testPunct(){
-  var new_string = removePunctuation('¿Cómo? Yes, let’s / do it, “she own’s it” /  ¡No way! Saliga-smith.');
-  Logger.log(new_string);
 }
