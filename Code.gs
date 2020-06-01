@@ -1,8 +1,8 @@
 var slidesID = ""; //actual slides id
 //var slidesID = "1KSRNvuKJRybgqiTNzpipfGVbNttjpcUJPEncX52qkNA";
-var word_arr = []; //sentences
-var type_arr = []; //types
-var page_arr = []; //page num
+//var word_arr = []; //sentences
+//var type_arr = []; //types
+//var page_arr = []; //page num
 
 /*
 Type 1: find half the length of the sentence and then subtract that amount from the middle of the slide (360) and that is the starting x pt, y = 284
@@ -29,78 +29,73 @@ function getRssFeed() {
 }
 
 function main(){
-  logProductInfo(); // three arrays: word_arr, type_arr, page_arr; should all be the same length
-  var presentation = Slides.Presentations.get(slidesID);
-  getRssFeed();
-  //Logger.log("Sent: " + word_arr);
- // Logger.log("Type: " + type_arr);
- // Logger.log("Page: " + page_arr);
-  for(var n = 0; n < type_arr.length; n++){
-    if (type_arr[n] == ""){
-      type_arr.splice(n,1);
-      word_arr.splice(n,1);
-      page_arr.splice(n,1);
-      n--;
-    }
-  }
-  for(var z = 0; z < word_arr.length; z++){ 
-    //Logger.log("z = " + z);
-    if (type_arr[z] == 1){
-      type1(word_arr[z].trim(), page_arr[z]);
+  Logger.log("begin");
+  //logProductInfo(); // three arrays: word_arr, type_arr, page_arr; should all be the same length
+  var sheet = SpreadsheetApp.getActiveSheet(); //gets the sheet you are on
+  var data = sheet.getDataRange().getValues(); //gets the values on the sheet
+  slidesID = (data[1][4]); //assigns the slidesID to the value at E2 (the index starts at 0; so row 1 is actually 0)
+  var presentation = Slides.Presentations.get(slidesID); //access the presentation based on ID
+  var slides = presentation.slides; //get the slides from the presentation
+  
+ // getRssFeed();
+  
+  for (var z = 32; z < data.length; z++) { //starting from row 33
+    var type = data[z][21];
+    //data[z][6] is sentence, data[z][22] is page
+    if(type == 1){
+      type1(data[z][6].trim(), data[z][22], slides);
       Logger.log("Type 1 just ran.");
-      //Utilities.sleep(6000);
+      //Utilities.sleep(20000);
     }
-    else if (type_arr[z] == 2){
-      var sents_arr = [word_arr[z].trim(), word_arr[z+1].trim()];
-      type2(sents_arr, page_arr[z]);
+    else if (type == 2){
+      var sents_arr = [data[z][6].trim(), data[z+1][6].trim()];
+      type2(sents_arr, data[z][22], slides);
       z++;
       Logger.log("Type 2 just ran.");
-     // Utilities.sleep(6000);
+     // Utilities.sleep(20000);
     }
-    else if (type_arr[z] == 3){
-      var sents_arr = [word_arr[z].trim(), word_arr[z+1].trim(), word_arr[z+2].trim()];
-      type3(sents_arr, page_arr[z]);
+    else if(type == 3){
+      var sents_arr = [data[z][6].trim(), data[z+1][6].trim(), data[z+2][6].trim()];;
+      type3(sents_arr, data[z][22], slides);
       z = z+2;
-      //Utilities.sleep(6000);
+      Logger.log("Type 3 just ran");
+      //Utilities.sleep(20000);
     }
-    else if (type_arr[z] == 4){
-      var sents_arr = [word_arr[z].trim(), word_arr[z+1].trim(), word_arr[z+2].trim(), word_arr[z+3].trim()];
-      type4(sents_arr, page_arr[z]);
+    else if(type ==4){
+      var sents_arr = [data[z][6].trim(), data[z+1][6].trim(), data[z+2][6].trim(), data[z+3][6].trim()];
+      type4(sents_arr, data[z][22], slides);
       z = z+3;
       Logger.log("Type 4 just ran.");
-     // Utilities.sleep(6000);
     }
-//    else if (type_arr[z] == ''){
-//      //don't do anything
-//    }
-//    else{
-//      //Logger.log("Nothing at position " + z);
-//    }
+    else{
+      //Logger.log("Blank cell");
+    }
   }
 }
+
 function test_types(){
-  logProductInfo();
-  Logger.log("Sent: " + word_arr);
-  Logger.log("Type: " + type_arr);
-  Logger.log("Page: " + page_arr);
-  for(var i = 0; i < type_arr.length; i++){
-    if (type_arr[i] == ""){
-      type_arr.splice(i,1);
-      word_arr.splice(i,1);
-      page_arr.splice(i,1);
-      i--;
+  Logger.log("begin");
+  //logProductInfo(); // three arrays: word_arr, type_arr, page_arr; should all be the same length
+  var sheet = SpreadsheetApp.getActiveSheet(); //gets the sheet you are on
+  var data = sheet.getDataRange().getValues(); //gets the values on the sheet
+  slidesID = (data[1][4]); //assigns the slidesID to the value at E2 (the index starts at 0; so row 1 is actually 0)
+  var presentation = Slides.Presentations.get(slidesID); //access the presentation based on ID
+  var slides = presentation.slides; //get the slides from the presentation
+  
+  for (var z = 1129; z < data.length; z++){
+    var type = data[z][21];
+    if(type ==4){
+      var sents_arr = [data[z][6].trim(), data[z+1][6].trim(), data[z+2][6].trim(), data[z+3][6].trim()];
+      type4(sents_arr, data[z][22], slides);
+      z = z+3;
+      Logger.log("Type 4 just ran.");
     }
   }
-  Logger.log("Sent: " + word_arr);
-  Logger.log("Type: " + type_arr);
-  Logger.log("Page: " + page_arr);
   
 }
 
-function type1(sentence, page){
+function type1(sentence, page, slides){
   y = 284; 
-  var presentation = Slides.Presentations.get(slidesID); //get the correct presentation
-  var slides = presentation.slides;
   var pageID = slides[page-1].objectId;
   var text = sentence;
   var size = text.length*len;
@@ -111,13 +106,13 @@ function type1(sentence, page){
 
   for(var i = 0; i < substrings.length; i++){
 
-    if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“")){
+    if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith('"')){
       var temp = substrings[i];
       x = x + len;
       if (temp[1] == '¡' || temp[1] == "¿"){
         x = x + len;
       }
-      if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
+      if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".") || substrings[i].endsWith('"')){
         var q = substrings[i].charAt(substrings[i].length-2); 
         var new_text = removePunctuation(substrings[i]);
         var wordlength = new_text.length*len; //gets the lengths of each word 
@@ -138,7 +133,7 @@ function type1(sentence, page){
         x = x + wordlength +len;
       }
     }
-    else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".")){
+    else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".") || substrings[i].endsWith('"')){
       var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
       var new_text = removePunctuation(substrings[i]);
       var wordlength = new_text.length*len;//gets the lengths of each word 
@@ -158,15 +153,11 @@ function type1(sentence, page){
       var rect = addRectangle(slidesID, pageID, wordlength);
       changeRectangleColor(slidesID, rect);
       x = x + wordlength +len;
-      //}  
     }
-  }
-  
+  Utilities.sleep(1000);}
 }
 
-function type2(sentences, page){
-  var presentation = Slides.Presentations.get(slidesID); //get the correct presentation
-  var slides = presentation.slides; //get the slides from the presentation
+function type2(sentences, page, slides){
   x = 125.5; y = 108;
   var pageID = slides[page-1].objectId; //get the pageID of the slide
   
@@ -179,13 +170,13 @@ function type2(sentences, page){
     var substrings = text.split(' ');
   
     for(var i = 0; i < substrings.length; i++){
-      if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
+      if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/") || substrings[i].startsWith('"')){
         var temp = substrings[i];
         x = x + len;
         if (temp[1] == '¡' || temp[1] == "¿"){
           x = x + len;
         }
-        if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
+        if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".") || substrings[i].endsWith('"')){
           //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
           var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
           //Logger.log("End char: " + p);
@@ -213,7 +204,7 @@ function type2(sentences, page){
           x = x + wordlength +len;
         }
       }
-      else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".")){
+      else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".") || substrings[i].endsWith('"')){
         var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
         //Logger.log("End char: " + p);
         var new_text = removePunctuation(substrings[i]);
@@ -231,23 +222,17 @@ function type2(sentences, page){
         }
       }
       else{
-        var wordlength = substrings[i].length*len; //gets the lengths of each word //words is an array of the wordlengths
-        //if type 2:
-        //for(var j = 0; j<wordlength.length; j++){
+        var wordlength = substrings[i].length*len; //gets the lengths of each word
         var rect = addRectangle(slidesID, pageID, wordlength);      
         changeRectangleColor(slidesID, rect);
         x = x + wordlength +len;
-        //}  
       }
-    }
+    Utilities.sleep(1000);}
+  //Utilities.sleep(20000);
   }
 }
 
-function type3(sentences, page){
-  var presentation = Slides.Presentations.get(slidesID); //get the correct presentation
-  var slides = presentation.slides; //get the slides from the presentation
-  //for(var i = 0; i < word_arr.length;i++){ //word_arr.length = # of sentences
-  //if type 2:
+function type3(sentences, page, slides){
   x = 125.5; y = 78;
   var pageID = slides[page-1].objectId; //get the pageID of the slide
   for(var w = 0; w < sentences.length; w++){ // loops through the number of sentences
@@ -265,14 +250,14 @@ function type3(sentences, page){
     
     for(var i = 0; i < substrings.length; i++){
       
-      if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
+      if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/") || substrings[i].startsWith('"')){
         var temp = substrings[i];
         //Logger.log("Start char: " + temp[0]);
         x = x + len;
         if (temp[1] == '¡' || temp[1] == "¿"){
           x = x + len;
         }
-        if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
+        if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".") || substrings[i].endsWith('"')){
           //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
           var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
           //Logger.log("End char: " + p);
@@ -300,7 +285,7 @@ function type3(sentences, page){
           x = x + wordlength +len;
         }
       }
-      else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".")){
+      else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".") || substrings[i].endsWith('"')){
         //var p = substrings[i].charAt(substrings[i].length-1);
         var q = substrings[i].charAt(substrings[i].length-2); 
         var new_text = removePunctuation(substrings[i]);
@@ -319,19 +304,16 @@ function type3(sentences, page){
         changeRectangleColor(slidesID, rect);
         x = x + wordlength +len;
       }
-    }
+    Utilities.sleep(1000);}
+ // Utilities.sleep(20000);
   }
 }
 
 
-function type4(sentences, page){
-  var presentation = Slides.Presentations.get(slidesID); //get the correct presentation
-  var slides = presentation.slides; //get the slides from the presentation
-  //for(var i = 0; i < word_arr.length;i++){ //word_arr.length = # of sentences
-  //if type 2:
+function type4(sentences, page, slides){
   x = 125.5; y = 52;
   var pageID = slides[page-1].objectId; //get the pageID of the slide
-  //addTextBox(slidesID, pageID, word_arr[i]); //add text to slide
+  
   for(var w = 0; w < sentences.length; w++){ // loops through the number of sentences
     var text = sentences[w]; //two sentences
     if(w == 1){ //reset starting point
@@ -350,15 +332,14 @@ function type4(sentences, page){
     var substrings = text.split(' ');
     
     for(var i = 0; i < substrings.length; i++){
-      //Logger.log("Substring " + i + ": " + substrings[i]);
-      if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/")){
+      if(substrings[i].startsWith('¡') || substrings[i].startsWith("¿")|| substrings[i].startsWith("“") || substrings[i].startsWith("/") || substrings[i].startsWith('"')){
         var temp = substrings[i];
         //Logger.log("Start char: " + temp[0]);
         x = x + len;
         if (temp[1] == '¡' || temp[1] == "¿"){
           x = x + len;
         }
-        if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".")){
+        if (substrings[i].endsWith("!") || substrings[i].endsWith("?") ||substrings[i].endsWith(",") ||substrings[i].endsWith("”") ||substrings[i].endsWith(".") || substrings[i].endsWith('"')){
           //var p = substrings[i].charAt(substrings[i].length-1); //p is the last character
           var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
           //Logger.log("End char: " + p);
@@ -386,11 +367,9 @@ function type4(sentences, page){
           x = x + wordlength +len;
         }
       }
-      else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".")){
-        //var p = substrings[i].charAt(substrings[i].length-1);
+      else if (substrings[i].endsWith("?") || substrings[i].endsWith("!") || substrings[i].endsWith(",") || substrings[i].endsWith("”")||substrings[i].endsWith(".") || substrings[i].endsWith('"')){
         var q = substrings[i].charAt(substrings[i].length-2); // q is the second to last character
-        
-        //Logger.log("End char: " + p);
+
         var new_text = removePunctuation(substrings[i]);
         //Logger.log(new_text);
         var wordlength = new_text.length*len;//gets the lengths of each word //words is an array of the wordlengths
@@ -411,8 +390,8 @@ function type4(sentences, page){
         changeRectangleColor(slidesID, rect);
         x = x + wordlength +len;
       }
-    }
-    Utilities.sleep(7000);
+    Utilities.sleep(1000);}
+   // Utilities.sleep(20000);
   }
 }
 
@@ -424,14 +403,13 @@ function type4(sentences, page){
 
 function logProductInfo() {
   var sheet = SpreadsheetApp.getActiveSheet();
-  //var cell = sheet.get
   var data = sheet.getDataRange().getValues();
   slidesID = (data[1][4]);
   for (var i = 32; i < data.length; i++) {
     var type = data[i][21];
    // Logger.log("Type:" + data[i][21]);
     if(type == ""){
-      Logger.log("Nothing there");
+     // Logger.log("Nothing there");
     }
     else{
       word_arr.push(data[i][6]);
@@ -507,7 +485,7 @@ function changeRectangleColor(presentationId, pageElementId) {
         "shapeBackgroundFill": {
           "solidFill": {
             "color": {
-              "themeColor": 'ACCENT1'
+              "themeColor": 'ACCENT4'
               //DARK1 = BLACK
               //DARK2 = DARK GRAY
               //LIGHT1 = WHITE
@@ -547,7 +525,7 @@ function changeRectangleColor(presentationId, pageElementId) {
  * @see https://remarkablemark.org/blog/2019/09/28/javascript-remove-punctuation/
  */
 
-var regex = /[!¡“#$%&'”*+,/.:;<=>?¿[\]^_`{|}~]/g;
+var regex = /[!¡“#$%&'"”*+,/.:;<=>?¿[\]^_`{|}~]/g;
 
 /**
  * Removes punctuation.
